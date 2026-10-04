@@ -24,7 +24,7 @@ const trackedUsers = [
   {
     userId: "3",
     fullName: "Yokabid Zehra",
-    username: "YokabidZehra10",
+    username: "YokabidZehra110",
     year: "Second Year"
   },
   {
@@ -125,47 +125,116 @@ const trackedUsers = [
   }
 ];
 
+// In-memory cache variables
+let leaderboardCache = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
 app.get('/api/leaderboard', async (req, res) => {
+  if (leaderboardCache && (Date.now() - lastFetchTime < CACHE_DURATION)) {
+    return res.json(leaderboardCache);
+  }
+
   try {
     const leaderboardData = [];
 
     for (const student of trackedUsers) {
-      const profile = await leetcode.user(student.username);
-      
-      if (!profile || !profile.matchedUser) {
-        console.log(`User ${student.username} not found on LeetCode`);
-        continue;
+      try {
+        const profile = await leetcode.user(student.username);
+        
+        if (!profile || !profile.matchedUser) {
+          console.log(`User ${student.username} not found on LeetCode`);
+          continue;
+        }
+
+        const stats = profile.matchedUser.submitStats.acSubmissionNum;
+        const solvedEasy = stats.find(s => s.difficulty === "Easy")?.count || stats[1]?.count || 0;
+        const solvedMedium = stats.find(s => s.difficulty === "Medium")?.count || stats[2]?.count || 0;
+        const solvedHard = stats.find(s => s.difficulty === "Hard")?.count || stats[3]?.count || 0;
+
+        const xp = (solvedEasy * 2) + (solvedMedium * 3) + (solvedHard * 5);
+        const realBadges = profile.matchedUser.badges 
+          ? profile.matchedUser.badges.map(b => b.displayName) 
+          : [];
+
+        leaderboardData.push({
+          userId: student.userId,
+          fullName: student.fullName,
+          username: student.username,
+          year: student.year,
+          levelNumber: 1, 
+          streak: 5,    
+          featuredBadges: realBadges,
+          xp: xp,
+          avatar: profile.matchedUser.profile?.userAvatar || ""
+        });
+
+        // Small pause between requests to prevent Nginx 404 blocks
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (userErr) {
+        console.error(`Failed to fetch stats for ${student.username}:`, userErr.message);
       }
-
-      const solvedEasy = profile.matchedUser.submitStats.acSubmissionNum[1].count;
-      const solvedMedium = profile.matchedUser.submitStats.acSubmissionNum[2].count;
-      const solvedHard = profile.matchedUser.submitStats.acSubmissionNum[3].count;
-
-      const xp = (solvedEasy * 2) + (solvedMedium * 3) + (solvedHard * 5);
-
-      // Extract real badges if available on the profile object
-      const realBadges = profile.matchedUser.badges 
-        ? profile.matchedUser.badges.map(b => b.displayName) 
-        : [];
-
-      leaderboardData.push({
-        userId: student.userId,
-        fullName: student.fullName,
-        username: student.username,
-        year: student.year,
-        levelNumber: 1, 
-        streak: 5,     
-        featuredBadges: realBadges, // Real badges from LeetCode
-        xp: xp,
-        avatar: profile.matchedUser.profile.userAvatar
-      });
     }
 
     leaderboardData.sort((a, b) => b.xp - a.xp);
+    
+    leaderboardCache = leaderboardData;
+    lastFetchTime = Date.now();
+
     res.json(leaderboardData);
   } catch (error) {
-    console.error("Error fetching LeetCode data:", error);
+    console.error("Error fetching leaderboard data:", error.message);
     res.status(500).json({ error: "Failed to fetch leaderboard data" });
+  }
+});
+
+// Robust profile route handling both userId and username
+app.get('/api/user/:identifier', async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    
+    const student = trackedUsers.find(s => 
+      s.userId === identifier || s.username.toLowerCase() === identifier.toLowerCase()
+    );
+    
+    if (!student) {
+      return res.status(404).json({ error: "User not found in tracked list" });
+    }
+
+    const profile = await leetcode.user(student.username);
+    
+    if (!profile || !profile.matchedUser) {
+      return res.status(404).json({ error: "User not found on LeetCode" });
+    }
+
+    const stats = profile.matchedUser.submitStats.acSubmissionNum;
+    const solvedEasy = stats.find(s => s.difficulty === "Easy")?.count || stats[1]?.count || 0;
+    const solvedMedium = stats.find(s => s.difficulty === "Medium")?.count || stats[2]?.count || 0;
+    const solvedHard = stats.find(s => s.difficulty === "Hard")?.count || stats[3]?.count || 0;
+    
+    const xp = (solvedEasy * 2) + (solvedMedium * 3) + (solvedHard * 5);
+    const realBadges = profile.matchedUser.badges 
+      ? profile.matchedUser.badges.map(b => b.displayName) 
+      : [];
+
+    const userData = {
+      userId: student.userId,
+      fullName: student.fullName,
+      username: student.username,
+      year: student.year,
+      solvedEasy,
+      solvedMedium,
+      solvedHard,
+      xp,
+      featuredBadges: realBadges,
+      avatar: profile.matchedUser.profile?.userAvatar || "",
+      submissionCalendar: profile.matchedUser.submissionCalendar || null
+    };
+
+    res.json(userData);
+  } catch (error) {
+    console.error(`Error fetching data for ${req.params.identifier}:`, error.message);
+    res.status(500).json({ error: "Failed to fetch user profile" });
   }
 });
 
