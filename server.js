@@ -42,7 +42,7 @@ const trackedUsers = [
   {
     userId: "6",
     fullName: "Prateeksha",
-    username: "PrateekshaM",
+    username: "prateek_25",
     year: "First Year"
   },
   {
@@ -122,6 +122,102 @@ const trackedUsers = [
     fullName: "Nishanth Uttam Paul",
     username: "Nishanth_uttam",
     year: "First Year"
+  },
+  {
+    userId: "20",
+    fullName: "P Sreeshanth",
+    username: "pr1982",
+    year: "Third Year"
+  },
+  {
+    userId: "21",
+    fullName: "G Rupali",
+    username: "Rup_1712",
+    year: "Third Year"
+  },
+  {
+    userId: "22",
+    fullName: "V Haritha",
+    username: "hvritha",
+    year: "First Year"
+  },
+  {
+    userId: "23",
+    fullName: "Vishal Shivanath",
+    username: "VishalShivanath",
+    year: "First Year"
+  },
+  {
+    userId: "24",
+    fullName: "Mukund Pranith Singh P",
+    username: "Mukund_1607",
+    year: "First Year"
+  },
+  {
+    userId: "25",
+    fullName: "Charvi Akshara P",
+    username: "Akshara757",
+    year: "Second Year"
+  },
+  {
+    userId: "26",
+    fullName: "Mehak Agarwal",
+    username: "mehak120",
+    year: "Second Year"
+  },
+  {
+    userId: "27",
+    fullName: "Gade Chethana",
+    username: "chethana_gade",
+    year: "Second Year"
+  },
+  {
+    userId: "28",
+    fullName: "Shanmathi",
+    username: "shanmathiii_28",
+    year: "First Year"
+  },
+  {
+    userId: "29",
+    fullName: "Piyush Solanki S",
+    username: "oBp6t8rAb2",
+    year: "Third Year"
+  },
+  {
+    userId: "30",
+    fullName: "Namitha V",
+    username: "nami_48",
+    year: "Third Year"
+  },
+  {
+    userId: "31",
+    fullName: "Jewel George",
+    username: "JGP10",
+    year: "Second Year"
+  },
+  {
+    userId: "32",
+    fullName: "Sugan G",
+    username: "sugan-44",
+    year: "Third Year"
+  },
+  {
+    userId: "33",
+    fullName: "Aindrila Jazlin",
+    username: "Aindrila_Jazlin",
+    year: "First Year"
+  },
+  {
+    userId: "34",
+    fullName: "Syed Yahya",
+    username: "Syed__Yahya",
+    year: "Second Year"
+  },
+  {
+    userId: "35",
+    fullName: "Arjit Singh",
+    username: "DOG_water1001",
+    year: "Second Year"
   }
 ];
 
